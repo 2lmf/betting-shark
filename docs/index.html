@@ -5,19 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Betting Shark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,800&display=swap" rel="stylesheet">
 <style>
   /* Tokens: one place for colours, redefined for dark mode below */
   :root {
-    --bg: #f4f5f7; --card: #ffffff; --line: #e1e4e9; --text: #15191f; --muted: #5d6673;
-    --accent: #0f6e6e; --warn-bg: #fff4dc; --warn-text: #7a5200;
-    --pos: #12703f; --neg: #b3261e; --chip: #eceef2;
-    --radius: 12px;
+    --bg: #eef1f6; --card: #ffffff; --line: #dfe4ec; --text: #0e1726; --muted: #586376;
+    --navy: #0b1f3f; --navy-2: #16346b; --red: #c8102e;
+    --accent: #1d57c4; --warn-bg: #fff3d6; --warn-text: #765000;
+    --pos: #0f6b3c; --neg: #b3261e; --chip: #e9edf3; --tint: #f6f8fb;
+    --radius: 14px;
+    --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #101317; --card: #1a1e24; --line: #2c323a; --text: #eef0f3; --muted: #9aa3af;
-      --accent: #5cc8c8; --warn-bg: #3a2c0e; --warn-text: #f3cf85;
-      --pos: #5fd394; --neg: #f28b82; --chip: #272c33;
+      --bg: #090e18; --card: #131a27; --line: #263044; --text: #eef1f6; --muted: #9ba6b8;
+      --navy: #0a1a36; --navy-2: #14305f;
+      --accent: #7fa8f5; --warn-bg: #352809; --warn-text: #f3cf85;
+      --pos: #5fd394; --neg: #f28b82; --chip: #20293a; --tint: #182132;
     }
   }
   * { box-sizing: border-box; }
@@ -26,81 +32,142 @@
     font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     font-variant-numeric: tabular-nums;
   }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 16px; }
-  header h1 { margin: 0; font-size: 22px; letter-spacing: -0.01em; }
-  header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
-  .notice { background: var(--warn-bg); color: var(--warn-text); border-radius: var(--radius); padding: 10px 12px; margin: 12px 0; font-size: 13px; }
-  .tabs { display: flex; gap: 4px; margin: 14px 0; background: var(--chip); padding: 4px; border-radius: 10px; }
-  .tabs button { flex: 1; min-height: 40px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font: inherit; font-weight: 600; cursor: pointer; }
-  .tabs button[aria-selected="true"] { background: var(--card); color: var(--text); }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+
+  /* Header: dark band with faint court lines behind it */
+  .hero { position: relative; overflow: hidden; background: linear-gradient(120deg, var(--navy) 35%, var(--navy-2)); color: #fff; border-bottom: 3px solid var(--red); }
+  .hero .court { position: absolute; right: -40px; top: -30px; width: 340px; height: 260px; opacity: 0.13; pointer-events: none; }
+  .hero .wrap { position: relative; padding-top: 18px; padding-bottom: 14px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .nba { display: flex; align-items: center; justify-content: center; width: 42px; height: 66px; padding: 5px; background: #fff; border-radius: 9px; flex: none; }
+  .nba img { height: 100%; width: auto; display: block; }
+  .nba-alt { color: #0b1f3f; font: italic 800 17px var(--display); }
+  h1 { margin: 0; font: italic 800 34px/1 var(--display); letter-spacing: 0.01em; text-transform: uppercase; }
+  #stamp { margin: 5px 0 0; color: #c4d0e4; font-size: 13px; min-height: 19px; }
+  .tabs { display: flex; gap: 4px; margin-top: 16px; background: rgb(255 255 255 / 0.1); padding: 4px; border-radius: 11px; }
+  .tabs button { flex: 1; min-height: 42px; border: 0; border-radius: 8px; background: transparent; color: #d5deec; font: inherit; font-weight: 600; cursor: pointer; }
+  .tabs button:hover { color: #fff; }
+  .tabs button[aria-selected="true"] { background: #fff; color: #0b1f3f; }
+  .tabs button:focus-visible { outline-color: #fff; }
+
   button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+  .notice { background: var(--warn-bg); color: var(--warn-text); border-radius: 10px; padding: 9px 12px; margin: 14px 0; font-size: 13px; }
+  main { padding-bottom: 4px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; box-shadow: 0 1px 3px rgb(11 31 63 / 0.06); }
   .pad { padding: 14px; }
-  .time { color: var(--muted); font-size: 13px; }
-  .score { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; margin-top: 6px; font-size: 16px; font-weight: 600; }
-  .score .num { text-align: right; }
   .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
-  .absences { margin-top: 10px; font-size: 13px; color: var(--muted); }
+
+  /* Scoreboard: colour strip for the two teams, logos left and right, projection in the middle */
+  .strip { height: 5px; }
+  .meta { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 13px; }
+  .live { color: var(--red); font-weight: 600; }
+  .board { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 6px; margin-top: 10px; }
+  .team { display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0; }
+  .logo { width: 62px; height: 62px; padding: 7px; border-radius: 50%; background: #f1f4f8; object-fit: contain; display: block; }
+  .logo-alt { display: flex; align-items: center; justify-content: center; color: #0b1f3f; font: 700 18px var(--display); }
+  .nick { margin-top: 6px; font: 700 19px/1.1 var(--display); max-width: 100%; }
+  .role { color: var(--muted); font-size: 11px; }
+  .score { text-align: center; padding: 0 2px; white-space: nowrap; }
+  .score b { font: 700 44px/1 var(--display); }
+  .score .sep { color: var(--muted); font: 600 28px/1 var(--display); margin: 0 5px; position: relative; top: -4px; }
+  .score small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
+  .absences { margin: 14px -14px -14px; padding: 10px 14px; background: var(--tint); border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
   .absences b { color: var(--text); font-weight: 600; }
+  .absences div + div { margin-top: 3px; }
   .q { color: var(--warn-text); }
-  /* Tappable line rows open the calculator; 44px keeps them comfortable on a phone */
+
+  /* Tappable line rows open the calculator; 48px keeps them comfortable on a phone */
+  .row, .head { display: grid; grid-template-columns: minmax(0, 1fr) 54px 54px 66px; gap: 8px; }
   .row {
-    display: grid; grid-template-columns: minmax(0, 1fr) 54px 54px 66px; gap: 8px; align-items: center;
-    width: 100%; min-height: 48px; padding: 8px 14px; border: 0; border-top: 1px solid var(--line);
+    align-items: center; width: 100%; min-height: 50px; padding: 8px 14px; border: 0; border-top: 1px solid var(--line);
     background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
   }
-  .row:hover { background: var(--chip); }
-  .row .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
-  .row .side { display: block; color: var(--muted); font-size: 12px; font-weight: 400; }
+  .row:hover { background: var(--tint); }
+  .row .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  .row .side { display: block; color: var(--muted); font-size: 12px; font-weight: 400; overflow: hidden; text-overflow: ellipsis; }
   .row .n { text-align: right; }
-  .head { display: grid; grid-template-columns: minmax(0, 1fr) 54px 54px 66px; gap: 8px; padding: 8px 14px 4px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+  .head { padding: 9px 14px 5px; border-top: 1px solid var(--line); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
   .head span:not(:first-child) { text-align: right; }
-  .ev { font-weight: 600; }
-  .ev.flag { color: var(--warn-text); }
+  .ev { display: inline-block; font-weight: 700; }
+  .ev.flag { padding: 1px 6px; margin-right: -6px; border-radius: 6px; background: var(--warn-bg); color: var(--warn-text); }
   .ev.low { color: var(--muted); font-weight: 400; }
   .mine { display: block; font-size: 11px; color: var(--accent); font-weight: 600; }
-  details summary { min-height: 44px; padding: 12px 14px; border-top: 1px solid var(--line); cursor: pointer; font-weight: 600; font-size: 14px; }
-  .empty { padding: 28px 16px; text-align: center; color: var(--muted); }
-  h2 { font-size: 16px; margin: 0 0 4px; }
+  details summary { display: flex; align-items: center; justify-content: space-between; min-height: 46px; padding: 12px 14px; border-top: 1px solid var(--line); cursor: pointer; font-weight: 600; font-size: 14px; list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after { content: ""; width: 8px; height: 8px; margin-right: 3px; border: solid var(--muted); border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform 0.15s; }
+  details[open] summary::after { transform: rotate(-135deg); }
+  details summary:hover { background: var(--tint); }
+
+  .empty { padding: 34px 20px 38px; text-align: center; color: var(--muted); }
+  .empty svg { width: 64px; height: 64px; display: block; margin: 0 auto 12px; }
+  .empty h2 { color: var(--text); }
+  .empty p { margin: 0 auto; max-width: 380px; }
+
+  h2 { font: 700 22px/1.15 var(--display); margin: 0 0 4px; }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+  .tiles div { background: var(--tint); border-radius: 10px; padding: 9px 10px; font-size: 12px; color: var(--muted); }
+  .tiles strong { display: block; color: var(--text); font: 700 26px/1.1 var(--display); }
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th { font-size: 12px; font-weight: 500; color: var(--muted); text-align: right; padding: 4px 6px; }
-  td { padding: 7px 6px; border-top: 1px solid var(--line); text-align: right; }
+  th { font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); text-align: right; padding: 6px; }
+  td { padding: 8px 6px; border-top: 1px solid var(--line); text-align: right; }
   th:first-child, td:first-child { text-align: left; padding-left: 0; }
   th:last-child, td:last-child { padding-right: 0; }
   .scroll { overflow-x: auto; }
   .pos { color: var(--pos); } .neg { color: var(--neg); }
-  .verdict { font-weight: 600; margin: 6px 0 10px; }
-  dialog { width: min(420px, calc(100vw - 32px)); border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text); padding: 16px; }
-  dialog::backdrop { background: rgb(0 0 0 / 0.5); }
-  dialog h3 { margin: 0; font-size: 17px; }
+  .nw { white-space: nowrap; }
+
+  footer { margin: 18px 0 26px; color: var(--muted); font-size: 12px; text-align: center; }
+
+  dialog { width: min(420px, calc(100vw - 32px)); border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text); padding: 18px; }
+  dialog::backdrop { background: rgb(5 12 26 / 0.6); }
+  dialog h3 { margin: 0; font: 700 23px/1.15 var(--display); }
   .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
   label { font-size: 13px; color: var(--muted); display: block; }
-  input { width: 100%; margin-top: 4px; min-height: 44px; padding: 8px 10px; font: inherit; font-size: 16px; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; }
+  input { width: 100%; margin-top: 4px; min-height: 44px; padding: 8px 10px; font: inherit; font-size: 16px; color: var(--text); background: var(--tint); border: 1px solid var(--line); border-radius: 8px; }
   .res { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .res div { background: var(--chip); border-radius: 8px; padding: 10px; }
-  .res strong { display: block; font-size: 20px; }
+  .res div { background: var(--tint); border-radius: 10px; padding: 10px; }
+  .res strong { display: block; font: 700 28px/1.15 var(--display); }
   .res small { color: var(--muted); }
   .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
   .btn { min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--line); background: none; color: var(--text); font: inherit; font-weight: 600; cursor: pointer; }
-  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--card); }
+  .btn.primary { background: #16346b; border-color: #16346b; color: #fff; }
   [hidden] { display: none !important; }
+
+  @media (max-width: 420px) {
+    h1 { font-size: 30px; }
+    .logo { width: 52px; height: 52px; }
+    .nick { font-size: 17px; }
+    .score b { font-size: 38px; }
+    .score .sep { margin: 0 3px; }
+  }
 </style>
 </head>
 <body>
+<header class="hero">
+  <svg class="court" viewBox="0 0 340 260" fill="none" stroke="#fff" stroke-width="3" aria-hidden="true">
+    <rect x="130" y="-20" width="130" height="170"/><circle cx="195" cy="150" r="65"/>
+    <path d="M40 -20V90a155 155 0 0 0 310 0V-20"/>
+  </svg>
+  <div class="wrap">
+    <div class="brand">
+      <span class="nba"><img src="https://cdn.nba.com/logos/leagues/logo-nba.svg" alt="NBA"></span>
+      <div>
+        <h1>Betting Shark</h1>
+        <p id="stamp">Učitavam…</p>
+      </div>
+    </div>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-today" aria-selected="true" aria-controls="today">Danas</button>
+      <button role="tab" id="tab-results" aria-selected="false" aria-controls="results">Rezultati</button>
+    </div>
+  </div>
+</header>
 <div class="wrap">
-  <header>
-    <h1>Betting Shark</h1>
-    <p id="stamp">Učitavam…</p>
-  </header>
   <div class="notice"><b>Faza testiranja, bez pravog novca.</b> Model još nije dokazan protiv kladionica, a EV je precijenjen. Velika razlika od linije obično znači da modelu nešto nedostaje.</div>
   <div class="notice" id="stale" hidden></div>
-
-  <div class="tabs" role="tablist">
-    <button role="tab" id="tab-today" aria-selected="true" aria-controls="today">Danas</button>
-    <button role="tab" id="tab-results" aria-selected="false" aria-controls="results">Rezultati</button>
-  </div>
   <main id="today" role="tabpanel" aria-labelledby="tab-today"></main>
   <main id="results" role="tabpanel" aria-labelledby="tab-results" hidden></main>
+  <footer>Osobni alat za praćenje modela. Nije povezan s NBA-om, a logotipi pripadaju njihovim vlasnicima.</footer>
 </div>
 
 <dialog id="calc" aria-labelledby="calc-title">
@@ -130,6 +197,51 @@ const STALE_HOURS = 30;
 const STORE_KEY = "bettingshark-odds";
 const MARKETS = { player_points: "Koševi igrača", totals: "Ukupno koševa", spreads: "Hendikep" };
 const ROW_HEAD = '<div class="head"><span></span><span>Linija</span><span>Model</span><span>EV</span></div>';
+
+// name → [NBA team id, abbreviation, primary colour]; the id gives the logo URL
+const TEAMS = {
+  "Atlanta Hawks": [1610612737, "ATL", "#e03a3e"], "Boston Celtics": [1610612738, "BOS", "#007a33"],
+  "Brooklyn Nets": [1610612751, "BKN", "#3a3a3a"], "Charlotte Hornets": [1610612766, "CHA", "#1d1160"],
+  "Chicago Bulls": [1610612741, "CHI", "#ce1141"], "Cleveland Cavaliers": [1610612739, "CLE", "#860038"],
+  "Dallas Mavericks": [1610612742, "DAL", "#00538c"], "Denver Nuggets": [1610612743, "DEN", "#fec524"],
+  "Detroit Pistons": [1610612765, "DET", "#c8102e"], "Golden State Warriors": [1610612744, "GSW", "#1d428a"],
+  "Houston Rockets": [1610612745, "HOU", "#ce1141"], "Indiana Pacers": [1610612754, "IND", "#002d62"],
+  "Los Angeles Clippers": [1610612746, "LAC", "#c8102e"], "LA Clippers": [1610612746, "LAC", "#c8102e"],
+  "Los Angeles Lakers": [1610612747, "LAL", "#552583"], "Memphis Grizzlies": [1610612763, "MEM", "#5d76a9"],
+  "Miami Heat": [1610612748, "MIA", "#98002e"], "Milwaukee Bucks": [1610612749, "MIL", "#00471b"],
+  "Minnesota Timberwolves": [1610612750, "MIN", "#236192"], "New Orleans Pelicans": [1610612740, "NOP", "#85714d"],
+  "New York Knicks": [1610612752, "NYK", "#f58426"], "Oklahoma City Thunder": [1610612760, "OKC", "#007ac1"],
+  "Orlando Magic": [1610612753, "ORL", "#0077c0"], "Philadelphia 76ers": [1610612755, "PHI", "#006bb6"],
+  "Phoenix Suns": [1610612756, "PHX", "#e56020"], "Portland Trail Blazers": [1610612757, "POR", "#e03a3e"],
+  "Sacramento Kings": [1610612758, "SAC", "#5a2d81"], "San Antonio Spurs": [1610612759, "SAS", "#6b7780"],
+  "Toronto Raptors": [1610612761, "TOR", "#ce1141"], "Utah Jazz": [1610612762, "UTA", "#3e2680"],
+  "Washington Wizards": [1610612764, "WAS", "#002b5c"],
+};
+const nickname = name => name.endsWith("Trail Blazers") ? "Trail Blazers" : name.split(" ").pop();
+
+function logo(name) {
+  const team = TEAMS[name];
+  if (!team) return `<span class="logo logo-alt">${esc(name.slice(0, 3).toUpperCase())}</span>`;
+  return `<img class="logo" src="https://cdn.nba.com/logos/nba/${team[0]}/primary/L/logo.svg" alt="" width="62" height="62" loading="lazy" data-abbr="${team[1]}">`;
+}
+// If the logo CDN fails, fall back to the abbreviation (error events don't bubble, hence capture)
+document.addEventListener("error", e => {
+  const img = e.target;
+  if (!(img instanceof HTMLImageElement)) return;
+  if (img.classList.contains("logo")) img.outerHTML = `<span class="logo logo-alt">${img.dataset.abbr}</span>`;
+  else if (img.closest(".nba")) nbaFallback(img);
+}, true);
+function nbaFallback(img) { img.outerHTML = '<span class="nba-alt">NBA</span>'; }
+{
+  const nbaImg = document.querySelector(".nba img");
+  if (nbaImg.complete && !nbaImg.naturalWidth) nbaFallback(nbaImg);
+}
+
+function plural(n, one, few, many) {
+  const tens = n % 100, ones = n % 10;
+  if (ones === 1 && tens !== 11) return `${n} ${one}`;
+  return ones >= 2 && ones <= 4 && (tens < 12 || tens > 14) ? `${n} ${few}` : `${n} ${many}`;
+}
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -169,7 +281,7 @@ function rowLabel(row, game) {
   const chosen = row.side === "Over" ? names.a : names.b;
   if (row.market === "spreads") {
     const line = row.side === "Over" ? row.line : -row.line;
-    return { title: "Hendikep domaćina", side: `Strana: ${chosen} ${signedLine(line)}` };
+    return { title: "Hendikep dom.", side: `${nickname(chosen)} ${signedLine(line)}` };
   }
   if (row.market === "totals") return { title: MARKETS.totals, side: chosen };
   const status = row.injury_status === "Questionable" ? " · upitan" : "";
@@ -195,13 +307,19 @@ function lineRow(game, row, gi, li, group) {
     <span class="name">${esc(label.title)}<span class="side">${esc(label.side)}</span></span>
     <span class="n">${line}</span>
     <span class="n">${row.market === "spreads" && row.proj > 0 ? "+" : ""}${proj}</span>
-    <span class="n ev ${evClass}">${signedPct(row.ev_med)}${mineBadge(game, row)}</span>
+    <span class="n"><span class="ev ${evClass}">${signedPct(row.ev_med)}</span>${mineBadge(game, row)}</span>
   </button>`;
 }
 
 function renderToday(data) {
   if (!data.games.length) {
-    $("today").innerHTML = '<div class="card empty">Trenutno nema otvorenih utakmica. Nove linije stižu svaki dan oko 20:00.</div>';
+    $("today").innerHTML = `<div class="card empty">
+      <svg viewBox="0 0 64 64" fill="none" stroke="#c8102e" stroke-width="2.5" aria-hidden="true">
+        <circle cx="32" cy="32" r="28"/><path d="M4 32h56M32 4v56M12 12c8 7 12 13 12 20s-4 13-12 20M52 12c-8 7-12 13-12 20s4 13 12 20"/>
+      </svg>
+      <h2>Trenutno nema otvorenih utakmica</h2>
+      <p>Nove linije stižu svaki dan oko 20:00.</p>
+    </div>`;
     return;
   }
   $("today").innerHTML = data.games.map((g, gi) => {
@@ -212,16 +330,19 @@ function renderToday(data) {
       .map(a => a.status === "Questionable" ? `<span class="q">${esc(a.player)} (upitan)</span>` : esc(a.player));
     const absHome = abs(1), absAway = abs(0);
     const absHtml = absHome.length || absAway.length
-      ? `<div class="absences">${absAway.length ? `<div><b>${esc(g.away)}:</b> ${absAway.join(", ")}</div>` : ""}${absHome.length ? `<div><b>${esc(g.home)}:</b> ${absHome.join(", ")}</div>` : ""}</div>`
+      ? `<div class="absences">${absAway.length ? `<div><b>${esc(nickname(g.away))}:</b> ${absAway.join(", ")}</div>` : ""}${absHome.length ? `<div><b>${esc(nickname(g.home))}:</b> ${absHome.join(", ")}</div>` : ""}</div>`
       : `<div class="absences">${g.injury_report ? "Nitko važan nije na popisu ozljeda." : "Izvještaj o ozljedama nije bio dostupan."}</div>`;
+    const colour = name => TEAMS[name]?.[2] ?? "var(--line)";
+    const team = (name, role) => `<div class="team">${logo(name)}<span class="nick">${esc(nickname(name))}</span><span class="role">${role}</span></div>`;
     return `<article class="card">
+      <div class="strip" style="background:linear-gradient(90deg, ${colour(g.away)} 50%, ${colour(g.home)} 50%)"></div>
       <div class="pad">
-        <div class="time">${esc(when)}${started ? " · počelo" : ""}</div>
-        <div class="score">
-          <span>${esc(g.away)}</span><span class="num">${g.proj_away.toFixed(0)}</span>
-          <span>${esc(g.home)}</span><span class="num">${g.proj_home.toFixed(0)}</span>
+        <div class="meta"><span>${esc(when)}</span>${started ? '<span class="live">počelo</span>' : ""}</div>
+        <div class="board">
+          ${team(g.away, "gost")}
+          <div class="score"><b>${g.proj_away.toFixed(0)}</b><span class="sep">:</span><b>${g.proj_home.toFixed(0)}</b><small>projekcija modela</small></div>
+          ${team(g.home, "domaćin")}
         </div>
-        <div class="sub">Projekcija modela, domaćin dolje</div>
         ${absHtml}
       </div>
       ${ROW_HEAD}
@@ -234,18 +355,18 @@ function renderToday(data) {
 
 function renderResults(data) {
   const c = data.counts;
-  const counts = `<p class="sub">Namireno ${c.settled} od ${c.logged} linija · otvoreno ${c.open} · poništeno ${c.void} (igrač nije igrao)</p>`;
+  const counts = `<div class="tiles"><div><strong>${c.settled}</strong>namireno</div><div><strong>${c.open}</strong>otvoreno</div><div><strong>${c.void}</strong>poništeno</div></div>${c.void ? '<p class="sub">Poništeno znači da igrač nije igrao.</p>' : ""}`;
   if (!c.settled) {
     $("results").innerHTML = `<div class="card pad"><h2>Još nema rezultata</h2>${counts}<p>Prve oklade se namiruju dan nakon prvih utakmica. Pouzdana ocjena modela treba nekoliko stotina linija, otprilike 4–6 tjedana.</p></div>`;
     return;
   }
   const verdict = a => {
-    if (a.lines < MIN_LINES_VERDICT) return `premalo podataka (${a.lines}/${MIN_LINES_VERDICT})`;
+    if (a.lines < MIN_LINES_VERDICT) return "premalo";
     return a.model_ll < a.market_ll ? "model bolji" : "tržište bolje";
   };
-  const acc = data.accuracy.map(a => `<tr><td>${MARKETS[a.market] || esc(a.market)}</td><td>${a.lines}</td><td>${a.model_ll.toFixed(3)}</td><td>${a.market_ll.toFixed(3)}</td><td>${verdict(a)}</td></tr>`).join("");
+  const acc = data.accuracy.map(a => `<tr><td>${MARKETS[a.market] || esc(a.market)}</td><td>${a.lines}</td><td>${a.model_ll.toFixed(3)}</td><td>${a.market_ll.toFixed(3)}</td><td class="nw">${verdict(a)}</td></tr>`).join("");
   const num = v => `<span class="${v >= 0 ? "pos" : "neg"}">${v > 0 ? "+" : ""}${v.toFixed(1)} %</span>`;
-  const roi = data.roi.map(r => `<tr><td>${MARKETS[r.market] || esc(r.market)}</td><td>≥ ${(r.min_ev * 100).toFixed(0)} %</td><td>${r.bets}</td><td>${r.hit.toFixed(0)} %</td><td>${num(r.roi_med)}</td></tr>`).join("");
+  const roi = data.roi.map(r => `<tr><td>${MARKETS[r.market] || esc(r.market)}</td><td class="nw">≥ ${(r.min_ev * 100).toFixed(0)} %</td><td>${r.bets}</td><td>${r.hit.toFixed(0)} %</td><td class="nw">${num(r.roi_med)}</td></tr>`).join("");
   const recent = data.recent.map(r => {
     const title = r.market === "player_points" ? r.subject : `${r.away} @ ${r.home}`;
     const res = r.outcome === "push" ? "povrat" : r.outcome === r.side ? "pogodak" : "promašaj";
@@ -255,7 +376,7 @@ function renderResults(data) {
   }).join("");
   $("results").innerHTML = `
     <div class="card pad"><h2>Tko predviđa bolje?</h2>${counts}
-      <p class="sub">Log-loss na svim linijama, manje je bolje. Ovo je glavna mjera: ako model nije bolji od tržišta, ROI je samo sreća.</p>
+      <p class="sub">Log-loss na svim linijama, manje je bolje. Ovo je glavna mjera: ako model nije bolji od tržišta, ROI je samo sreća. Ocjena se daje od ${MIN_LINES_VERDICT} linija po tržištu.</p>
       <div class="scroll"><table><tr><th>Tržište</th><th>Linija</th><th>Model</th><th>Tržište</th><th>Ocjena</th></tr>${acc}</table></div></div>
     <div class="card pad"><h2>Oklade na papir</h2>
       <p class="sub">Ulog 1 jedinica po okladi, po srednjoj američkoj kvoti.</p>
@@ -337,7 +458,9 @@ fetch(`data.json?t=${Date.now()}`)
   .then(data => {
     window.appData = data;
     const generated = new Date(data.generated);
-    $("stamp").textContent = "Osvježeno " + generated.toLocaleString("hr-HR", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" });
+    const lineCount = data.games.reduce((sum, g) => sum + g.lines.length + g.players.length, 0);
+    const summary = data.games.length ? `${plural(data.games.length, "utakmica", "utakmice", "utakmica")} · ${plural(lineCount, "linija", "linije", "linija")} · ` : "";
+    $("stamp").textContent = summary + "osvježeno " + generated.toLocaleString("hr-HR", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" });
     const hours = (Date.now() - generated) / 36e5;
     if (hours > STALE_HOURS) {
       $("stale").hidden = false;
