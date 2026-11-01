@@ -71,32 +71,28 @@
   .score b { font: 700 44px/1 var(--display); }
   .score .sep { color: var(--muted); font: 600 28px/1 var(--display); margin: 0 5px; position: relative; top: -4px; }
   .score small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
-  .absences { margin: 14px -14px -14px; padding: 10px 14px; background: var(--tint); border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+  .absences { padding: 10px 14px; background: var(--tint); border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
   .absences b { color: var(--text); font-weight: 600; }
   .absences div + div { margin-top: 3px; }
   .q { color: var(--warn-text); }
 
-  /* Tappable line rows open the calculator; 48px keeps them comfortable on a phone */
-  .row, .head { display: grid; grid-template-columns: minmax(0, 1fr) 54px 54px 66px; gap: 8px; }
-  .row {
-    align-items: center; width: 100%; min-height: 50px; padding: 8px 14px; border: 0; border-top: 1px solid var(--line);
-    background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
-  }
-  .row:hover { background: var(--tint); }
-  .row .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
-  .row .side { display: block; color: var(--muted); font-size: 12px; font-weight: 400; overflow: hidden; text-overflow: ellipsis; }
-  .row .n { text-align: right; }
-  .head { padding: 9px 14px 5px; border-top: 1px solid var(--line); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+  /* Comparison tables. Rows with a line are buttons that open the calculator */
+  .row, .head { display: grid; gap: 8px; align-items: center; padding: 8px 14px; border-top: 1px solid var(--line); }
+  .cmp { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr); }
+  .pl { grid-template-columns: minmax(0, 1fr) 50px 76px 58px; }
+  .row { width: 100%; min-height: 44px; border-width: 1px 0 0; background: none; color: inherit; font: inherit; text-align: left; }
+  button.row { cursor: pointer; }
+  button.row:hover { background: var(--tint); }
+  .row .name { min-width: 0; font-weight: 600; }
+  .row .side { display: block; color: var(--warn-text); font-size: 12px; font-weight: 400; }
+  .n { text-align: right; min-width: 0; overflow-wrap: anywhere; }
+  .n.model { font-weight: 700; }
+  .diff { color: var(--muted); }
+  .head { padding: 9px 14px 5px; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
   .head span:not(:first-child) { text-align: right; }
-  .ev { display: inline-block; font-weight: 700; }
-  .ev.flag { padding: 1px 6px; margin-right: -6px; border-radius: 6px; background: var(--warn-bg); color: var(--warn-text); }
-  .ev.low { color: var(--muted); font-weight: 400; }
+  .group { padding: 9px 14px; border-top: 1px solid var(--line); background: var(--tint); font: 700 17px/1.1 var(--display); }
+  .hint { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
   .mine { display: block; font-size: 11px; color: var(--accent); font-weight: 600; }
-  details summary { display: flex; align-items: center; justify-content: space-between; min-height: 46px; padding: 12px 14px; border-top: 1px solid var(--line); cursor: pointer; font-weight: 600; font-size: 14px; list-style: none; }
-  details summary::-webkit-details-marker { display: none; }
-  details summary::after { content: ""; width: 8px; height: 8px; margin-right: 3px; border: solid var(--muted); border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform 0.15s; }
-  details[open] summary::after { transform: rotate(-135deg); }
-  details summary:hover { background: var(--tint); }
 
   .empty { padding: 34px 20px 38px; text-align: center; color: var(--muted); }
   .empty svg { width: 64px; height: 64px; display: block; margin: 0 auto 12px; }
@@ -164,7 +160,7 @@
   </div>
 </header>
 <div class="wrap">
-  <div class="notice"><b>Faza testiranja, bez pravog novca.</b> Model još nije dokazan protiv kladionica, a EV je precijenjen. Velika razlika od linije obično znači da modelu nešto nedostaje.</div>
+  <div class="notice"><b>Faza testiranja, bez pravog novca.</b> Model još nije dokazan protiv kladionica. Velika razlika od njih obično znači da modelu nešto nedostaje.</div>
   <div class="notice" id="stale" hidden></div>
   <main id="today" role="tabpanel" aria-labelledby="tab-today"></main>
   <main id="results" role="tabpanel" aria-labelledby="tab-results" hidden></main>
@@ -197,8 +193,6 @@ const MIN_LINES_VERDICT = 300; // fewer settled lines than this can't separate m
 const STALE_HOURS = 30;
 const STORE_KEY = "bettingshark-odds";
 const MARKETS = { player_points: "Koševi igrača", totals: "Ukupno koševa", spreads: "Hendikep" };
-const ROW_HEAD = '<div class="head"><span></span><span>Linija</span><span>Model</span><span>EV</span></div>';
-
 // name → [NBA team id, abbreviation, primary colour]; the id gives the logo URL
 const TEAMS = {
   "Atlanta Hawks": [1610612737, "ATL", "#e03a3e"], "Boston Celtics": [1610612738, "BOS", "#007a33"],
@@ -248,7 +242,6 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const pct = (x, d = 0) => (x * 100).toFixed(d) + " %";
 const signedPct = x => (x > 0 ? "+" : "") + (x * 100).toFixed(0) + " %";
-const signedLine = x => (x > 0 ? "+" : "") + x;
 
 // Saved odds live only in this browser; everything works without them (private mode etc.)
 function loadStore() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; } }
@@ -277,18 +270,6 @@ function sideNames(row, game) {
   return { a: "Više", b: "Manje" };
 }
 
-function rowLabel(row, game) {
-  const names = sideNames(row, game);
-  const chosen = row.side === "Over" ? names.a : names.b;
-  if (row.market === "spreads") {
-    const line = row.side === "Over" ? row.line : -row.line;
-    return { title: "Hendikep dom.", side: `${nickname(chosen)} ${signedLine(line)}` };
-  }
-  if (row.market === "totals") return { title: MARKETS.totals, side: chosen };
-  const status = row.injury_status === "Questionable" ? " · upitan" : "";
-  return { title: row.subject, side: chosen + status };
-}
-
 function rowKey(game, row) { return `${game.event_id}|${row.market}|${row.subject}`; }
 
 function mineBadge(game, row) {
@@ -299,17 +280,61 @@ function mineBadge(game, row) {
   return evs.length ? `<span class="mine">tvoja ${signedPct(Math.max(...evs))}</span>` : "";
 }
 
-function lineRow(game, row, gi, li, group) {
-  const label = rowLabel(row, game);
-  const evClass = row.ev_med >= FLAG_EV ? "flag" : row.ev_med < 0.04 ? "low" : "";
-  const proj = row.proj.toFixed(1);
-  const line = row.market === "spreads" ? signedLine(row.line) : row.line;
-  return `<button class="row" data-g="${gi}" data-l="${li}" data-group="${group}" type="button">
-    <span class="name">${esc(label.title)}<span class="side">${esc(label.side)}</span></span>
-    <span class="n">${line}</span>
-    <span class="n">${row.market === "spreads" && row.proj > 0 ? "+" : ""}${proj}</span>
-    <span class="n"><span class="ev ${evClass}">${signedPct(row.ev_med)}</span>${mineBadge(game, row)}</span>
-  </button>`;
+// Margin from the home team's side → who wins and by how much
+function winner(margin, game) {
+  if (Math.abs(margin) < 0.05) return null;
+  return { name: nickname(margin > 0 ? game.home : game.away), by: Math.abs(margin).toFixed(1) };
+}
+
+function rowAttrs(gi, li, group) { return `data-g="${gi}" data-l="${li}" data-group="${group}" type="button"`; }
+
+function compareTable(g, gi) {
+  const spreadAt = g.lines.findIndex(r => r.market === "spreads");
+  const totalAt = g.lines.findIndex(r => r.market === "totals");
+  const spread = g.lines[spreadAt], total = g.lines[totalAt];
+
+  const modelMargin = g.proj_home - g.proj_away;
+  const modelWin = winner(modelMargin, g);
+  // The bookmakers' team points follow from their total and handicap
+  const mktMargin = spread ? -spread.line : null;
+  const mktWin = spread ? winner(mktMargin, g) : null;
+  const mktHome = spread && total ? (total.line + mktMargin) / 2 : null;
+  const mktAway = mktHome === null ? null : total.line - mktHome;
+
+  const text = v => v === null ? "–" : v.toFixed(1);
+  const cells = (label, model, market) => `<span class="name">${label}</span><span class="n model">${model}</span><span class="n">${market}</span>`;
+  const plain = (label, model, market) => `<div class="row cmp">${cells(label, model, market)}</div>`;
+  const tappable = (label, model, market, row, at) => row
+    ? `<button class="row cmp" ${rowAttrs(gi, at, "lines")}>${cells(label, model, market + mineBadge(g, row))}</button>`
+    : plain(label, model, market);
+
+  return `<div class="head cmp"><span></span><span>Model</span><span>Kladionice</span></div>
+    ${plain(esc(nickname(g.away)), g.proj_away.toFixed(1), text(mktAway))}
+    ${plain(esc(nickname(g.home)), g.proj_home.toFixed(1), text(mktHome))}
+    ${plain("Pobjednik", modelWin ? esc(modelWin.name) : "izjednačeno", !spread ? "–" : mktWin ? esc(mktWin.name) : "izjednačeno")}
+    ${tappable("Razlika", modelWin ? `za ${modelWin.by}` : "0", !spread ? "–" : mktWin ? `za ${mktWin.by}` : "0", spread, spreadAt)}
+    ${tappable("Ukupno", (g.proj_home + g.proj_away).toFixed(1), total ? total.line.toFixed(1) : "–", total, totalAt)}`;
+}
+
+function playerTable(g, gi) {
+  if (!g.players.length) return "";
+  const rows = g.players.map((row, li) => ({ row, li }));
+  const homeId = TEAMS[g.home]?.[0], awayId = TEAMS[g.away]?.[0];
+  const group = (title, list) => !list.length ? "" : `<div class="group">${esc(title)}</div>` +
+    list.sort((x, y) => y.row.proj - x.row.proj).map(({ row, li }) => {
+      const diff = row.proj - row.line;
+      const status = row.injury_status === "Questionable" ? '<span class="side">upitan</span>' : "";
+      return `<button class="row pl" ${rowAttrs(gi, li, "players")}>
+        <span class="name">${esc(row.subject)}${status}</span>
+        <span class="n model">${row.proj.toFixed(1)}</span>
+        <span class="n">${row.line.toFixed(1)}</span>
+        <span class="n diff">${diff > 0 ? "+" : ""}${diff.toFixed(1)}${mineBadge(g, row)}</span>
+      </button>`;
+    }).join("");
+  return `<div class="head pl"><span>Igrači</span><span>Model</span><span>Kladionice</span><span>Razlika</span></div>
+    ${group(nickname(g.away), rows.filter(r => r.row.team_id === awayId))}
+    ${group(nickname(g.home), rows.filter(r => r.row.team_id === homeId))}
+    ${group("Ostali", rows.filter(r => r.row.team_id !== awayId && r.row.team_id !== homeId))}`;
 }
 
 function renderToday(data) {
@@ -323,7 +348,7 @@ function renderToday(data) {
     </div>`;
     return;
   }
-  $("today").innerHTML = data.games.map((g, gi) => {
+  $("today").innerHTML = '<p class="hint">Dodirni razliku, ukupno ili igrača za izračun s kvotom svoje kladionice.</p>' + data.games.map((g, gi) => {
     const when = new Date(g.commence).toLocaleString("hr-HR", { weekday: "short", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" });
     const started = new Date(g.commence) < new Date();
     const abs = side => g.absences.filter(a => a.home_team === side)
@@ -341,15 +366,13 @@ function renderToday(data) {
         <div class="meta"><span>${esc(when)}</span>${started ? '<span class="live">počelo</span>' : ""}</div>
         <div class="board">
           ${team(g.away, "gost")}
-          <div class="score"><b>${g.proj_away.toFixed(0)}</b><span class="sep">:</span><b>${g.proj_home.toFixed(0)}</b><small>projekcija modela</small></div>
+          <div class="score"><b>${g.proj_away.toFixed(0)}</b><span class="sep">:</span><b>${g.proj_home.toFixed(0)}</b><small>model očekuje</small></div>
           ${team(g.home, "domaćin")}
         </div>
-        ${absHtml}
       </div>
-      ${ROW_HEAD}
-      ${g.lines.map((r, i) => lineRow(g, r, gi, i, "lines")).join("")}
-      ${g.players.length ? `<details><summary>Igrači (${g.players.length})</summary>${ROW_HEAD}
-        ${g.players.map((r, i) => lineRow(g, r, gi, i, "players")).join("")}</details>` : ""}
+      ${compareTable(g, gi)}
+      ${absHtml}
+      ${playerTable(g, gi)}
     </article>`;
   }).join("");
 }
@@ -413,8 +436,10 @@ function openCalc(game, row) {
   const names = sideNames(row, game);
   const saved = store[rowKey(game, row)];
   $("calc-title").textContent = row.market === "player_points" ? row.subject : `${MARKETS[row.market]}: ${game.away} @ ${game.home}`;
-  const projText = row.market === "spreads" ? `${game.home} ${row.proj > 0 ? "+" : ""}${row.proj.toFixed(1)}` : row.proj.toFixed(1);
-  $("calc-sub").textContent = `Projekcija modela: ${projText}` + (row.market === "spreads" ? " (razlika iz perspektive domaćina). Liniju upiši za domaćina, npr. -3.5." : "");
+  const win = winner(row.proj, game);
+  $("calc-sub").textContent = row.market === "spreads"
+    ? `Model: ${win ? `${win.name} za ${win.by}` : "izjednačeno"}. Liniju upiši kao hendikep domaćina (${nickname(game.home)}), npr. -3.5 ako je favorit.`
+    : `Model očekuje ${row.proj.toFixed(1)}.`;
   $("calc-a-label").textContent = names.a; $("calc-b-label").textContent = names.b;
   $("calc-a-name").textContent = names.a; $("calc-b-name").textContent = names.b;
   $("calc-line").value = saved ? saved.line : row.line;
@@ -422,7 +447,9 @@ function openCalc(game, row) {
   $("calc-b-odds").value = saved?.b ?? "";
   const mkt = row.mkt_p_over;
   $("calc-ref").textContent = `Američke kladionice (${row.books}): linija ${row.line}, kvote ${row.med_over} / ${row.med_under}` +
-    (mkt != null ? `, tržište ${pct(mkt)} / ${pct(1 - mkt)}.` : ".");
+    (mkt != null ? `, tržište ${pct(mkt)} / ${pct(1 - mkt)}.` : ".") +
+    ` EV po tim kvotama: ${names.a} ${signedPct(row.p_over * row.med_over - 1)}, ${names.b} ${signedPct(row.p_under * row.med_under - 1)}.` +
+    (Math.max(row.p_over * row.med_over, row.p_under * row.med_under) - 1 >= FLAG_EV ? " Tako visok EV obično znači da modelu nešto nedostaje, a ne da je našao priliku." : "");
   updateCalc();
   $("calc").showModal();
 }
@@ -430,7 +457,7 @@ function openCalc(game, row) {
 function refreshToday() { if (window.appData) renderToday(window.appData); }
 
 $("today").addEventListener("click", e => {
-  const b = e.target.closest(".row");
+  const b = e.target.closest("button.row");
   if (!b) return;
   const game = window.appData.games[+b.dataset.g];
   openCalc(game, game[b.dataset.group][+b.dataset.l]);
