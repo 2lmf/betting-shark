@@ -39,9 +39,9 @@
   .hero .court { position: absolute; right: -40px; top: -30px; width: 340px; height: 260px; opacity: 0.13; pointer-events: none; }
   .hero .wrap { position: relative; padding-top: 18px; padding-bottom: 14px; }
   .brand { display: flex; align-items: center; gap: 14px; }
-  .nba { display: flex; align-items: center; justify-content: center; width: 42px; height: 66px; padding: 5px; background: #fff; border-radius: 9px; flex: none; }
-  .nba img { height: 100%; width: auto; display: block; }
-  .nba-alt { color: #0b1f3f; font: italic 800 17px var(--display); }
+  .nba { display: flex; align-items: center; flex: none; }
+  .nba img { height: 48px; width: auto; display: block; }
+  .nba-alt { color: #fff; font: italic 800 26px var(--display); }
   h1 { margin: 0; font: italic 800 34px/1 var(--display); letter-spacing: 0.01em; text-transform: uppercase; }
   #stamp { margin: 5px 0 0; color: #c4d0e4; font-size: 13px; min-height: 19px; }
   .tabs { display: flex; gap: 4px; margin-top: 16px; background: rgb(255 255 255 / 0.1); padding: 4px; border-radius: 11px; }
@@ -135,6 +135,7 @@
 
   @media (max-width: 420px) {
     h1 { font-size: 30px; }
+    .nba img { height: 38px; }
     .logo { width: 52px; height: 52px; }
     .nick { font-size: 17px; }
     .score b { font-size: 38px; }
@@ -150,7 +151,7 @@
   </svg>
   <div class="wrap">
     <div class="brand">
-      <span class="nba"><img src="https://cdn.nba.com/logos/leagues/logo-nba.svg" alt="NBA"></span>
+      <span class="nba"><img src="https://cdn.nba.com/logos/leagues/logo-nba.svg" alt="NBA" width="82" height="48"></span>
       <div>
         <h1>Betting Shark</h1>
         <p id="stamp">Učitavam…</p>
